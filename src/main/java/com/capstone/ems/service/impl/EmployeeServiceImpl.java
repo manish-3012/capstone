@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.capstone.ems.domain.entities.EmployeeEntity;
+import com.capstone.ems.domain.entities.UserEntity;
 import com.capstone.ems.repository.EmployeeRepository;
 import com.capstone.ems.service.EmployeeService;
 
@@ -97,10 +98,10 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setProjectId(null);
         employeeRepository.save(employee);
     }
-    
-    @Override
-    public void requestEmployeeForProject(Long managerId, Long projectId, List<Long> employeeIds) {
-        // Logic to handle the request for employees for a project
-        // You can implement the necessary business logic here
-    }
+
+	@Override
+	public Optional<EmployeeEntity> findByUserName(String userName) {
+		return employeeRepository.findByUserName(userName);
+	}
+	
 }

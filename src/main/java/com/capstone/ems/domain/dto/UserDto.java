@@ -1,6 +1,5 @@
 package com.capstone.ems.domain.dto;
 
-import java.util.List;
 
 import com.capstone.ems.enums.UserType;
 
@@ -13,14 +12,13 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class EmployeeDto {
-
-    private Long empId;
-    private String userName;
-    private String name;
-    private List<String> skills;
-    private Long managerId;
-    private Long projectId;
+public class UserDto {
+	private Long user_id;
     private String email;
-    private UserType usertype;
+    private String password;
+    private UserType user_type;
+
+    private String user_name; 
+    private String name; 
+
 }

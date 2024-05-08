@@ -1,10 +1,10 @@
 package com.capstone.ems.service;
 
-import com.capstone.ems.domain.entities.EmployeeEntity;
-import com.capstone.ems.domain.dto.EmployeeDto;
-
 import java.util.List;
 import java.util.Optional;
+
+import com.capstone.ems.domain.entities.EmployeeEntity;
+import com.capstone.ems.domain.entities.UserEntity;
 
 public interface EmployeeService {
 
@@ -26,11 +26,14 @@ public interface EmployeeService {
     
     Optional<EmployeeEntity> findByEmail(String email);
     
+    Optional<EmployeeEntity> findByUserName(String userName);
+    
     Optional<EmployeeEntity> findBySkillsContaining(String skill);
 
     void assignProjectToEmployee(Long employeeId, Long projectId);
     
     void unassignProjectFromEmployee(Long employeeId);
     
-    void requestEmployeeForProject(Long managerId, Long projectId, List<Long> employeeIds);
+//    EmployeeEntity createEmployeeFromUser(UserEntity userEntity);
+    
 }
