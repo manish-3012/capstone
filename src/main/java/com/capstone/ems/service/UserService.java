@@ -9,7 +9,7 @@ public interface UserService {
     UserEntity createUser(UserEntity user);
     List<UserEntity> getAllUsers();
     UserEntity getUserById(Long userId);
-    void updateUserType(Long userId, UserType userType);
+    void updateRole(Long userId, UserType userType);
     UserEntity getUserByMail(String email);
     UserEntity getUserByUsername(String username);
     void delete(Long id);

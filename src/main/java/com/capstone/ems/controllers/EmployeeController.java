@@ -25,7 +25,6 @@ import com.capstone.ems.service.EmployeeService;
 import com.capstone.ems.service.UserService;
 
 @RestController
-@RequestMapping("/employees")
 public class EmployeeController {
 
     private final EmployeeService employeeService;
@@ -46,7 +45,7 @@ public class EmployeeController {
         return new ResponseEntity<>(employeeMapper.mapTo(savedEmployeeEntity), HttpStatus.CREATED);
     }
 
-    @GetMapping
+    @GetMapping("/all/get-employees")
     public ResponseEntity<List<EmployeeDto>> listEmployees() {
         List<EmployeeEntity> employees = employeeService.findAll();
         return ResponseEntity.ok(employees.stream()
@@ -54,7 +53,7 @@ public class EmployeeController {
                 .collect(Collectors.toList()));
     }
     
-    @GetMapping("project_id/{id}")
+    @GetMapping("/all/get-employees/project/{id}")
     public List<EmployeeDto> getEmployeesByProjectId(@PathVariable Long project_id) {
     	List<EmployeeEntity> employees = employeeService.findByProjectId(project_id);
         return employees.stream()
@@ -62,7 +61,7 @@ public class EmployeeController {
                 .collect(Collectors.toList());
     }
     
-    @GetMapping("mgr_id/{id}")
+    @GetMapping("/all/get-employees/manager/{id}")
     public List<EmployeeDto> getEmployeesByManagerId(@PathVariable Long mgr_id) {
     	List<EmployeeEntity> employees = employeeService.findByManagerId(mgr_id);
         return employees.stream()
@@ -70,37 +69,35 @@ public class EmployeeController {
                 .collect(Collectors.toList());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/all/get-employee/{id}")
     public ResponseEntity<EmployeeDto> getEmployee(@PathVariable Long id) {
         Optional<EmployeeEntity> foundEmployee = employeeService.findOne(id);
         return foundEmployee.map(employeeEntity -> new ResponseEntity<>(employeeMapper.mapTo(employeeEntity), HttpStatus.OK))
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
-
     
-    
-    @GetMapping("/email/{email}")
+    @GetMapping("/all/get-employee/email/{email}")
     public ResponseEntity<EmployeeDto> getEmployeeByEmail(@PathVariable String email) {
         Optional<EmployeeEntity> foundEmployee = employeeService.findByEmail(email);
         return foundEmployee.map(employeeEntity -> new ResponseEntity<>(employeeMapper.mapTo(employeeEntity), HttpStatus.OK))
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @GetMapping("/username/{username}")
+    @GetMapping("/all/get-employee/username/{username}")
     public ResponseEntity<EmployeeDto> getEmployeeByUserName(@PathVariable String username) {
         Optional<EmployeeEntity> foundEmployee = employeeService.findByUserName(username);
         return foundEmployee.map(employeeEntity -> new ResponseEntity<>(employeeMapper.mapTo(employeeEntity), HttpStatus.OK))
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
     
-    @GetMapping("/skills/{skill}")
+    @GetMapping("/all/get-employees/skills/{skill}")
     public ResponseEntity<EmployeeEntity> getEmployeesBySkill(@PathVariable String skill) {
         Optional<EmployeeEntity> employee = employeeService.findBySkillsContaining(skill);
         return employee.map(ResponseEntity::ok)
                         .orElse(ResponseEntity.notFound().build());
     }
     
-    @PatchMapping("/{id}/add-skill")
+    @PatchMapping("user/{id}/add-skill")
     public ResponseEntity<EmployeeDto> addSkill(@PathVariable Long id, @RequestParam String skill) {
         Optional<EmployeeEntity> optionalEmployee = employeeService.findOne(id);
         
@@ -119,27 +116,26 @@ public class EmployeeController {
         }
     }
     
-    @PutMapping("/assign-project/{employeeId}/{projectId}")
+    @PutMapping("admin/assign-project/{employeeId}/{projectId}")
     public ResponseEntity<String> assignProject(@PathVariable Long employeeId, @PathVariable Long projectId) {
     	employeeService.assignProjectToEmployee(employeeId, projectId);
         return ResponseEntity.ok("Project assigned to employee successfully");
     }
 
-    // LOOK INTO THIS
-    @PutMapping("/unassign-project/{employeeId}/{projectId}")
+    @PutMapping("admin/unassign-project/{employeeId}/{projectId}")
     public ResponseEntity<String> unassignProject(@PathVariable Long employeeId, @PathVariable Long projectId) {
     	employeeService.unassignProjectFromEmployee(employeeId);
         return ResponseEntity.ok("Project unassigned from employee successfully");
     }
     
-    @DeleteMapping("/{id}")
+    @DeleteMapping("admin/delete-employee/{id}")
     public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {
         employeeService.delete(id);
         userService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
     
-    @PutMapping("/employees/{id}")
+    @PutMapping("all/update-employee/{id}")
     public ResponseEntity<EmployeeDto> updateEmployee(@PathVariable Long id, @RequestBody EmployeeDto employeeDto) {
     	if (!employeeService.isExists(id)) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -152,7 +148,7 @@ public class EmployeeController {
         return new ResponseEntity<>(employeeMapper.mapTo(updatedEmployeeEntity), HttpStatus.OK);
     }
 
-    @PatchMapping("/employees/{id}")
+    @PatchMapping("all/partial-update-employee/{id}")
     public ResponseEntity<EmployeeDto> partialUpdateEmployee(@PathVariable Long id, @RequestBody EmployeeDto employeeDto) {
         if (!employeeService.isExists(id)) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

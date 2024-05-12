@@ -14,7 +14,6 @@ import com.capstone.ems.mapper.Mapper;
 import com.capstone.ems.service.ProjectService;
 
 @RestController
-@RequestMapping("/projects")
 public class ProjectController {
 
     private final ProjectService projectService;
@@ -25,14 +24,14 @@ public class ProjectController {
         this.mapper = projectMapper;
     }
 
-    @PostMapping
+    @PostMapping("/adminmanager/create-project")
     public ResponseEntity<ProjectDto> createProject(@RequestBody ProjectDto projectDto) {
         ProjectEntity projectEntity = mapper.mapFrom(projectDto);
         ProjectEntity savedProjectEntity = projectService.save(projectEntity);
         return new ResponseEntity<>(mapper.mapTo(savedProjectEntity), HttpStatus.CREATED);
     }
 
-    @GetMapping
+    @GetMapping("/adminmanager/get-projects")
     public List<ProjectDto> listProjects() {
         List<ProjectEntity> projects = projectService.findAll();
         return projects.stream()
@@ -42,14 +41,14 @@ public class ProjectController {
     
     
 
-    @GetMapping("/{id}")
+    @GetMapping("/adminmanager/get-project/{id}")
     public ResponseEntity<ProjectDto> getProject(@PathVariable Long id) {
         Optional<ProjectEntity> foundProject = projectService.findOne(id);
         return foundProject.map(projectEntity -> new ResponseEntity<>(mapper.mapTo(projectEntity), HttpStatus.OK))
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/adminmanager/update-project/{id}")
     public ResponseEntity<ProjectDto> updateProject(@PathVariable Long id, @RequestBody ProjectDto projectDto) {
         if (!projectService.isExists(id)) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -61,7 +60,7 @@ public class ProjectController {
         return new ResponseEntity<>(mapper.mapTo(updatedProjectEntity), HttpStatus.OK);
     }
 
-    @PatchMapping("/{id}")
+    @PatchMapping("/adminmanager/partial-update-project/{id}")
     public ResponseEntity<ProjectDto> partialUpdateProject(@PathVariable Long id, @RequestBody ProjectDto projectDto) {
         if (!projectService.isExists(id)) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -73,7 +72,7 @@ public class ProjectController {
         return new ResponseEntity<>(mapper.mapTo(updatedProjectEntity), HttpStatus.OK);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/adminmanager/delete-project/{id}")
     public ResponseEntity<Void> deleteProject(@PathVariable Long id) {
         projectService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

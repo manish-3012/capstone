@@ -37,7 +37,7 @@ public class UserServiceImpl implements UserService {
         EmployeeEntity emp = EmployeeEntity.builder()
         					.name(user.getName())
         					.email(email)
-        					.userType(user.getUserType())
+        					.userType(user.getRole())
         					.userName(username)
         					.build();
 
@@ -68,9 +68,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateUserType(Long userId, UserType userType) {
+    public void updateRole(Long userId, UserType userType) {
         UserEntity user = getUserById(userId);
-        user.setUserType(userType);
+        user.setRole(userType);
         userRepository.save(user);
     }
     

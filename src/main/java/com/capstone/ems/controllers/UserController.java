@@ -65,12 +65,12 @@ public class UserController {
 
     public UserType getUserType(Long userId) {
         UserEntity user = userService.getUserById(userId);
-        return user.getUserType();
+        return user.getRole();
     }
     
     @PutMapping("/{userId}/type/{userType}")
     public ResponseEntity<UserDto> updateUserType(@PathVariable Long userId, @PathVariable UserType userType) {
-        userService.updateUserType(userId, userType);
+        userService.updateRole(userId, userType);
         UserEntity user = userService.getUserById(userId);
         return ResponseEntity.ok(userMapper.mapTo(user));
     }

@@ -11,7 +11,7 @@ import com.capstone.ems.enums.UserType;
 
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
-	List<UserEntity> findByUserType(UserType userType);
+	List<UserEntity> findByRole(UserType userType);
 	Optional<UserEntity> findByEmail(String email);
 	Optional<UserEntity> findByUserName(String username);
 }
