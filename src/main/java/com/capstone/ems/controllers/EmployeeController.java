@@ -14,8 +14,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.capstone.ems.domain.dto.EmployeeDto;
@@ -90,23 +88,22 @@ public class EmployeeController {
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
     
-    @GetMapping("/all/get-employees/skills/{skill}")
-    public ResponseEntity<EmployeeEntity> getEmployeesBySkill(@PathVariable String skill) {
-        Optional<EmployeeEntity> employee = employeeService.findBySkillsContaining(skill);
-        return employee.map(ResponseEntity::ok)
-                        .orElse(ResponseEntity.notFound().build());
+    @GetMapping("/adminmanager/get-employees/skills/{skill}")
+    public ResponseEntity<List<EmployeeEntity>> getEmployeesBySkill(@PathVariable String skill) {
+        List<EmployeeEntity> employees = employeeService.findAllBySkillsContaining(skill);
+        return ResponseEntity.ok(employees);
     }
     
-    @PatchMapping("user/{id}/add-skill")
-    public ResponseEntity<EmployeeDto> addSkill(@PathVariable Long id, @RequestParam String skill) {
+    @PatchMapping("manageruser/add-skills/{id}")
+    public ResponseEntity<EmployeeDto> addSkills(@PathVariable Long id, @RequestBody List<String> skills) {
         Optional<EmployeeEntity> optionalEmployee = employeeService.findOne(id);
         
         if (optionalEmployee.isPresent()) {
             EmployeeEntity employee = optionalEmployee.get();
             
-            List<String> skills = employee.getSkills();
-            skills.add(skill);
-            employee.setSkills(skills);
+            List<String> existingSkills = employee.getSkills();
+            existingSkills.addAll(skills);
+            employee.setSkills(existingSkills);
             
             EmployeeEntity updatedEmployee = employeeService.save(employee);
             
@@ -135,20 +132,20 @@ public class EmployeeController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
     
-    @PutMapping("all/update-employee/{id}")
+    @PutMapping("admin/update-employee/{id}")
     public ResponseEntity<EmployeeDto> updateEmployee(@PathVariable Long id, @RequestBody EmployeeDto employeeDto) {
     	if (!employeeService.isExists(id)) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-
-    	employeeDto.setEmpId(id);
+    	
+        employeeDto.setEmpId(id);
         EmployeeEntity employeeEntity = employeeMapper.mapFrom(employeeDto);
-        
+            
         EmployeeEntity updatedEmployeeEntity = employeeService.save(employeeEntity);
         return new ResponseEntity<>(employeeMapper.mapTo(updatedEmployeeEntity), HttpStatus.OK);
     }
 
-    @PatchMapping("all/partial-update-employee/{id}")
+    @PatchMapping("admin/partial-update-employee/{id}")
     public ResponseEntity<EmployeeDto> partialUpdateEmployee(@PathVariable Long id, @RequestBody EmployeeDto employeeDto) {
         if (!employeeService.isExists(id)) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

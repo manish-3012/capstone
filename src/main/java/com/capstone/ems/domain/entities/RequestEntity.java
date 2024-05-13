@@ -8,7 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,10 +25,10 @@ public class RequestEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reqId;
     
-    @NotBlank(message = "Manager ID is required")
+    @NotNull(message = "Manager ID is required")
     private Long managerId;
     
-    @NotBlank(message = "Project ID is required")
+    @NotNull(message = "Project ID is required")
     private Long projectId;
     private List<Long> employeeIds;
     private RequestStatus status;

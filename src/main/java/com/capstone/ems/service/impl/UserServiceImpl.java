@@ -1,9 +1,12 @@
 package com.capstone.ems.service.impl;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.capstone.ems.domain.entities.EmployeeEntity;
@@ -11,6 +14,7 @@ import com.capstone.ems.domain.entities.UserEntity;
 import com.capstone.ems.enums.UserType;
 import com.capstone.ems.repository.EmployeeRepository;
 import com.capstone.ems.repository.UserRepository;
+import com.capstone.ems.service.EmployeeService;
 import com.capstone.ems.service.UserService;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -22,7 +26,8 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final EmployeeRepository employeeRepository;
 
-    public UserServiceImpl(UserRepository userRepository, EmployeeRepository employeeRepository) {
+    public UserServiceImpl(UserRepository userRepository, 
+    		EmployeeRepository employeeRepository) {
         this.userRepository = userRepository;
         this.employeeRepository = employeeRepository;
     }
@@ -103,4 +108,5 @@ public class UserServiceImpl implements UserService {
 
         return username.toString().toLowerCase();
     }
+
 }

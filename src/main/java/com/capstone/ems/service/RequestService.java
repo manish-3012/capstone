@@ -8,6 +8,7 @@ import com.capstone.ems.enums.RequestStatus;
 
 public interface RequestService {
     RequestEntity save(RequestEntity request);
+    List<RequestEntity> findAll();
     Optional<RequestEntity> getRequestById(Long requestId);
     List<RequestEntity> getRequestsByManager(Long managerId);
     List<RequestEntity> getRequestsByStatus(RequestStatus status);

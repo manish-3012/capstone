@@ -37,10 +37,13 @@ public class SecurityConfig {
         httpSecurity.csrf(AbstractHttpConfigurer::disable)
         		.cors(Customizer.withDefaults())
         		.authorizeHttpRequests(registry -> {
-                    registry.requestMatchers("/home", "/register/**", "/auth/**").permitAll();
+                    registry.requestMatchers("/home", "/register/**", "/auth/**", "/all/**").permitAll();
                     registry.requestMatchers("/admin/**").hasAuthority("ADMIN");
                     registry.requestMatchers("/user/**").hasAuthority("EMPLOYEE");
+                    registry.requestMatchers("/manager/**").hasAuthority("MANAGER");
                     registry.requestMatchers("/adminuser/**").hasAnyAuthority("ADMIN","EMPLOYEE");
+                    registry.requestMatchers("/adminmanager/**").hasAnyAuthority("ADMIN","MANAGER");
+                    registry.requestMatchers("/manageruser/**").hasAnyAuthority("EMPLOYEE","MANAGER");
                     registry.anyRequest().authenticated();
                 })
                 .sessionManagement(manager->manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

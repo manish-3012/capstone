@@ -20,4 +20,6 @@ public interface UserManagementService {
     ReqRes updateUser(Long userId, UserEntity updatedUser);
 
     ReqRes getMyInfo(String email);
+    
+    public UserEntity getUserByUsername(String username);
 }

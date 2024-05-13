@@ -51,7 +51,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             System.out.println("User Details fetched inside doFilterInternal as: " + userDetails);
 
             if (jwtUtils.isTokenValid(jwtToken, userDetails)) {
-            	System.out.println("Valid Token detected inside doFilterInternal: " + jwtToken);
             	System.out.println("User Details: " + userDetails);
                 SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
                 System.out.println("Security Context: " + securityContext);

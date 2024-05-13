@@ -15,53 +15,107 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.capstone.ems.domain.dto.ReqRes;
 import com.capstone.ems.domain.dto.RequestDto;
+import com.capstone.ems.domain.entities.EmployeeEntity;
 import com.capstone.ems.domain.entities.RequestEntity;
 import com.capstone.ems.enums.RequestStatus;
 import com.capstone.ems.mapper.Mapper;
+import com.capstone.ems.service.EmployeeService;
 import com.capstone.ems.service.RequestService;
-import com.capstone.ems.service.UserManagementService;
 
 @RestController
 public class RequestController {
     private final RequestService requestService;
     private final Mapper<RequestEntity, RequestDto> requestMapper;
-    private final UserManagementService userManagementService;
+    private final EmployeeService employeeService;
 
     public RequestController(RequestService requestService, 
-    		Mapper<RequestEntity, RequestDto> requestMapper, 
-    		UserManagementService userManagementService) {
+    		Mapper<RequestEntity, RequestDto> requestMapper,
+    		EmployeeService employeeService) {
         this.requestService = requestService;
         this.requestMapper = requestMapper;
-        this.userManagementService = userManagementService;
+        this.employeeService = employeeService;
     }
-
-    @PostMapping("/manager/create-request")
-    public ResponseEntity<RequestDto> createRequest(@RequestBody RequestDto requestDto) {
-    	requestDto.setStatus(RequestStatus.PENDING);
-        RequestEntity requestEntity = requestMapper.mapFrom(requestDto);
-        RequestEntity savedRequestEntity = requestService.save(requestEntity);
-        return new ResponseEntity<>(requestMapper.mapTo(savedRequestEntity), HttpStatus.CREATED);
-    }
-
-    @GetMapping("admin/status/{status}")
-    public ResponseEntity<List<RequestDto>> getRequestsByStatus(@PathVariable RequestStatus status) {
-        List<RequestEntity> requests = requestService.getRequestsByStatus(status);
+    
+    @GetMapping("/admin/all-requests")
+    public ResponseEntity<List<RequestDto>> adminGetAllRequests() {
+        List<RequestEntity> requests = requestService.findAll();
         List<RequestDto> requestDtos = requests.stream()
                 .map(requestMapper::mapTo)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(requestDtos);
     }
 
-    @GetMapping("admin/{requestId}")
+    @GetMapping("/manager/all-requests")
+    public ResponseEntity<List<RequestDto>> managerGetAllRequests() {
+    	EmployeeEntity employee = employeeService.getAuthenticatedEmployee();
+    	
+        List<RequestEntity> requests = requestService.findAll();
+        List<RequestEntity> filteredRequests = requests.stream()
+                .filter(request -> request.getManagerId().equals(employee.getEmpId()))
+                .collect(Collectors.toList());
+
+        List<RequestDto> requestDtos = filteredRequests.stream()
+                .map(requestMapper::mapTo)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(requestDtos);
+    }
+
+    @PostMapping("/manager/create-request")
+    public ResponseEntity<RequestDto> createRequest(@RequestBody RequestDto requestDto) {
+    	requestDto.setStatus(RequestStatus.PENDING);
+    
+        RequestEntity requestEntity = requestMapper.mapFrom(requestDto);
+        RequestEntity savedRequestEntity = requestService.save(requestEntity);
+        return new ResponseEntity<>(requestMapper.mapTo(savedRequestEntity), HttpStatus.CREATED);
+    }
+
+    @GetMapping("admin/status/{status}")
+    public ResponseEntity<List<RequestDto>> adminGetRequestsByStatus(@PathVariable RequestStatus status) {
+        List<RequestEntity> requests = requestService.getRequestsByStatus(status);
+        List<RequestDto> requestDtos = requests.stream()
+                .map(requestMapper::mapTo)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(requestDtos);
+    }
+    
+    @GetMapping("/manager/status/{status}")
+    public ResponseEntity<List<RequestDto>> getRequestsByStatus(@PathVariable String status) {
+    	EmployeeEntity employee = employeeService.getAuthenticatedEmployee();
+    	RequestStatus requestStatus = RequestStatus.valueOf(status.toUpperCase()); 
+    	
+        List<RequestEntity> requests = requestService.getRequestsByStatus(requestStatus);
+        List<RequestEntity> filteredRequests = requests.stream()
+                .filter(request -> request.getManagerId().equals(employee.getEmpId()))
+                .collect(Collectors.toList());
+
+        List<RequestDto> requestDtos = filteredRequests.stream()
+                .map(requestMapper::mapTo)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(requestDtos);
+    }
+    
+    @GetMapping("/admin/get-request/{requestId}")
+    public ResponseEntity<RequestDto> adminGetRequestById(@PathVariable Long requestId) {
+    	Optional<RequestEntity> foundRequest = requestService.getRequestById(requestId);
+        return foundRequest.map(requestEntity -> new ResponseEntity<>(requestMapper.mapTo(requestEntity), HttpStatus.OK))
+                    .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    @GetMapping("/manager/get-request/{requestId}")
     public ResponseEntity<RequestDto> getRequestById(@PathVariable Long requestId) {
-    	Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        ReqRes response = userManagementService.getMyInfo(email);
-        Optional<RequestEntity> request = requestService.getRequestById(requestId);
-        return request.map(requestEntity -> new ResponseEntity<>(requestMapper.mapTo(requestEntity), HttpStatus.OK))
-                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        Optional<RequestEntity> foundRequest = requestService.getRequestById(requestId);
+        EmployeeEntity employee = employeeService.getAuthenticatedEmployee();
+        RequestEntity request = foundRequest.orElseThrow(() -> new RuntimeException("Request not found"));
+
+        if (employee.getEmpId().equals(request.getManagerId())) {
+            return foundRequest.map(requestEntity -> new ResponseEntity<>(requestMapper.mapTo(requestEntity), HttpStatus.OK))
+                    .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        } else {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN); 
+        }
     }
 
     @PutMapping("/admin/request/{requestId}/status/{status}")
@@ -70,7 +124,7 @@ public class RequestController {
         return ResponseEntity.ok("Request Status Updated to: " + updatedRequestEntity.getStatus().toString());
     }
     
-    @GetMapping("admin/manager/{managerId}")
+    @GetMapping("admin/managerId/{managerId}")
     public ResponseEntity<List<RequestDto>> getRequestsByManager(@PathVariable Long managerId) {
         List<RequestEntity> requests = requestService.getRequestsByManager(managerId);
         List<RequestDto> requestDtos = requests.stream()

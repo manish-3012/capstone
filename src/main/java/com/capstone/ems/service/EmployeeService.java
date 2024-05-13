@@ -28,11 +28,13 @@ public interface EmployeeService {
     
     Optional<EmployeeEntity> findByUserName(String userName);
     
-    Optional<EmployeeEntity> findBySkillsContaining(String skill);
-
+    List<EmployeeEntity> findAllBySkillsContaining(String skill);
+    
     void assignProjectToEmployee(Long employeeId, Long projectId);
     
     void unassignProjectFromEmployee(Long employeeId);
+    
+    public EmployeeEntity getAuthenticatedEmployee();
     
 //    EmployeeEntity createEmployeeFromUser(UserEntity userEntity);
     

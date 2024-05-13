@@ -7,14 +7,21 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.capstone.ems.auth.JwtUtils;
 import com.capstone.ems.domain.dto.ReqRes;
+import com.capstone.ems.domain.entities.EmployeeEntity;
 import com.capstone.ems.domain.entities.UserEntity;
+import com.capstone.ems.repository.EmployeeRepository;
 import com.capstone.ems.repository.UserRepository;
+import com.capstone.ems.service.EmployeeService;
 import com.capstone.ems.service.UserManagementService;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class UserManagementServiceImpl implements UserManagementService{
@@ -28,6 +35,10 @@ public class UserManagementServiceImpl implements UserManagementService{
     private AuthenticationManager authenticationManager;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private EmployeeRepository employeeRepository;
+    @Autowired
+    private EmployeeService employeeService;
 
     public ReqRes register(ReqRes registrationRequest){
         ReqRes resp = new ReqRes();
@@ -50,6 +61,18 @@ public class UserManagementServiceImpl implements UserManagementService{
                 resp.setOurUsers((ourUsersResult));
                 resp.setMessage("User Saved Successfully");
                 resp.setStatusCode(200);
+
+                // Save to EmployeeEntity repository
+                EmployeeEntity emp = EmployeeEntity.builder()
+                        .name(registrationRequest.getName())
+                        .email(email)
+                        .userType(registrationRequest.getRole())
+                        .userName(username)
+                        .build();
+                EmployeeEntity empResult = employeeRepository.save(emp);
+                if (empResult != null) {
+                    System.out.println("Employee Saved Successfully " + empResult);
+                }
             }
 
         }catch (Exception e){
@@ -164,6 +187,12 @@ public class UserManagementServiceImpl implements UserManagementService{
         }
         return reqRes;
     }
+    
+    @Override
+    public UserEntity getUserByUsername(String username) {
+        return usersRepo.findByUserName(username)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with username: " + username));
+    }
 
     public ReqRes updateUser(Long userId, UserEntity updatedUser) {
         ReqRes reqRes = new ReqRes();
@@ -204,6 +233,7 @@ public class UserManagementServiceImpl implements UserManagementService{
         try {
             Optional<UserEntity> userOptional = usersRepo.findByEmail(email);
             if (userOptional.isPresent()) {
+            	System.out.println("UserOptional" + userOptional);
                 reqRes.setOurUsers(userOptional.get());
                 reqRes.setStatusCode(200);
                 reqRes.setMessage("successful");
@@ -241,5 +271,12 @@ public class UserManagementServiceImpl implements UserManagementService{
         username.append(totalDigits);
 
         return username.toString().toLowerCase();
+    }
+    
+    public EmployeeEntity getAuthenticatedEmployee() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        Optional<EmployeeEntity> foundEmployee = employeeService.findByEmail(email);
+        return foundEmployee.orElseThrow(() -> new RuntimeException("Employee not found"));
     }
 }

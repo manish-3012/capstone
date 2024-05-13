@@ -45,4 +45,9 @@ public class RequestServiceImpl implements RequestService {
         request.setStatus(status);
         return requestRepository.save(request);
     }
+
+	@Override
+	public List<RequestEntity> findAll() {
+		return requestRepository.findAll();
+	}
 }

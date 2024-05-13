@@ -3,6 +3,8 @@ package com.capstone.ems.service.impl;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.capstone.ems.domain.entities.EmployeeEntity;
@@ -74,8 +76,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
     
     @Override
-    public Optional<EmployeeEntity> findBySkillsContaining(String skill) {
-        return employeeRepository.findBySkillsContaining(skill);
+    public List<EmployeeEntity> findAllBySkillsContaining(String skill) {
+        return employeeRepository.findAllBySkillsContaining(skill);
     }
     
     @Override
@@ -104,4 +106,10 @@ public class EmployeeServiceImpl implements EmployeeService {
 		return employeeRepository.findByUserName(userName);
 	}
 	
+	public EmployeeEntity getAuthenticatedEmployee() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        Optional<EmployeeEntity> foundEmployee = findByEmail(email);
+        return foundEmployee.orElseThrow(() -> new RuntimeException("Employee not found"));
+    }
 }
