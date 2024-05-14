@@ -22,7 +22,7 @@ public class UserManagementController {
 	@Autowired
     private UserManagementService usersManagementService;
 
-    @PostMapping("/auth/register")
+    @PostMapping("/admin/auth/register")
     public ResponseEntity<ReqRes> register(@RequestBody ReqRes reg){
     	System.out.println("Entered the UserManagementController");
         return ResponseEntity.ok(usersManagementService.register(reg));

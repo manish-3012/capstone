@@ -31,11 +31,11 @@ public interface EmployeeService {
     List<EmployeeEntity> findAllBySkillsContaining(String skill);
     
     void assignProjectToEmployee(Long employeeId, Long projectId);
+
+    void assignManagerToEmployee(Long employeeId, Long projectId);
     
     void unassignProjectFromEmployee(Long employeeId);
-    
+
     public EmployeeEntity getAuthenticatedEmployee();
-    
-//    EmployeeEntity createEmployeeFromUser(UserEntity userEntity);
     
 }

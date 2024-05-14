@@ -6,8 +6,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,10 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.capstone.ems.domain.dto.RequestDto;
 import com.capstone.ems.domain.entities.EmployeeEntity;
+import com.capstone.ems.domain.entities.ProjectEntity;
 import com.capstone.ems.domain.entities.RequestEntity;
 import com.capstone.ems.enums.RequestStatus;
 import com.capstone.ems.mapper.Mapper;
 import com.capstone.ems.service.EmployeeService;
+import com.capstone.ems.service.ProjectService;
 import com.capstone.ems.service.RequestService;
 
 @RestController
@@ -28,13 +28,16 @@ public class RequestController {
     private final RequestService requestService;
     private final Mapper<RequestEntity, RequestDto> requestMapper;
     private final EmployeeService employeeService;
+    private final ProjectService projectService;
 
     public RequestController(RequestService requestService, 
     		Mapper<RequestEntity, RequestDto> requestMapper,
-    		EmployeeService employeeService) {
+    		EmployeeService employeeService,
+    		ProjectService projectService) {
         this.requestService = requestService;
         this.requestMapper = requestMapper;
         this.employeeService = employeeService;
+        this.projectService = projectService;
     }
     
     @GetMapping("/admin/all-requests")
@@ -64,9 +67,23 @@ public class RequestController {
 
     @PostMapping("/manager/create-request")
     public ResponseEntity<RequestDto> createRequest(@RequestBody RequestDto requestDto) {
+    	if (requestDto.getProjectId() == null) {
+            throw new IllegalArgumentException("Project ID must not be null");
+        }
+    	EmployeeEntity employee = employeeService.getAuthenticatedEmployee();
+    	requestDto.setManagerId(employee.getEmpId());
     	requestDto.setStatus(RequestStatus.PENDING);
-    
         RequestEntity requestEntity = requestMapper.mapFrom(requestDto);
+        
+        projectService.findOne(requestEntity.getProjectId())
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+
+        List<Long> employeeIds = requestEntity.getEmployeeIds();
+        for (Long employeeId : employeeIds) {
+            employeeService.findOne(employeeId)
+                    .orElseThrow(() -> new RuntimeException("Employee with ID " + employeeId + " not found"));
+        }
+        
         RequestEntity savedRequestEntity = requestService.save(requestEntity);
         return new ResponseEntity<>(requestMapper.mapTo(savedRequestEntity), HttpStatus.CREATED);
     }
@@ -121,6 +138,20 @@ public class RequestController {
     @PutMapping("/admin/request/{requestId}/status/{status}")
     public ResponseEntity<String> updateRequestStatus(@PathVariable Long requestId, @PathVariable RequestStatus status) {
     	RequestEntity updatedRequestEntity = requestService.updateRequestStatus(requestId, status);
+
+    	if (status == RequestStatus.APPROVED) {
+            Long projectId = updatedRequestEntity.getProjectId();
+            Long managerId = updatedRequestEntity.getManagerId();
+            
+            List<Long> employeeIds = updatedRequestEntity.getEmployeeIds();
+            for (Long employeeId : employeeIds) {
+            	employeeService.assignManagerToEmployee(employeeId, managerId);
+            	employeeService.assignProjectToEmployee(employeeId, projectId);
+            }
+            
+            employeeService.assignProjectToEmployee(managerId, projectId);
+        }
+    	
         return ResponseEntity.ok("Request Status Updated to: " + updatedRequestEntity.getStatus().toString());
     }
     

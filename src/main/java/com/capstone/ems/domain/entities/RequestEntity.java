@@ -25,7 +25,6 @@ public class RequestEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reqId;
     
-    @NotNull(message = "Manager ID is required")
     private Long managerId;
     
     @NotNull(message = "Project ID is required")

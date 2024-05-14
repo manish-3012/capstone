@@ -8,17 +8,22 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.capstone.ems.domain.entities.EmployeeEntity;
-import com.capstone.ems.domain.entities.UserEntity;
+import com.capstone.ems.domain.entities.ProjectEntity;
 import com.capstone.ems.repository.EmployeeRepository;
 import com.capstone.ems.service.EmployeeService;
+import com.capstone.ems.service.ProjectService;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
+   
+    private final ProjectService projectService;
 
-    public EmployeeServiceImpl(EmployeeRepository employeeRepository) {
+    public EmployeeServiceImpl(EmployeeRepository employeeRepository,
+    		ProjectService projectService) {
         this.employeeRepository = employeeRepository;
+        this.projectService = projectService;
     }
 
     @Override
@@ -89,6 +94,10 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new RuntimeException("Employee is already assigned to a project");
         }
         
+        
+        ProjectEntity project = projectService.findOne(projectId)
+        		.orElseThrow(() -> new RuntimeException("Project not found"));
+        
         employee.setProjectId(projectId);
         employeeRepository.save(employee);
     }
@@ -97,7 +106,12 @@ public class EmployeeServiceImpl implements EmployeeService {
     public void unassignProjectFromEmployee(Long employeeId) {
         EmployeeEntity employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
+        
+        if(employee.getProjectId() == null)
+            throw new RuntimeException("No project assigned to this employee");
+        
         employee.setProjectId(null);
+        employee.setManagerId(null);
         employeeRepository.save(employee);
     }
 
@@ -106,10 +120,28 @@ public class EmployeeServiceImpl implements EmployeeService {
 		return employeeRepository.findByUserName(userName);
 	}
 	
+	@Override
 	public EmployeeEntity getAuthenticatedEmployee() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         Optional<EmployeeEntity> foundEmployee = findByEmail(email);
         return foundEmployee.orElseThrow(() -> new RuntimeException("Employee not found"));
     }
+	
+	@Override
+	public void assignManagerToEmployee(Long employeeId, Long managerId) {
+	    EmployeeEntity employee = employeeRepository.findById(employeeId)
+	            .orElseThrow(() -> new RuntimeException("Employee not found"));
+	    
+	    if (employee.getManagerId() != null) {
+	        throw new RuntimeException("Employee is already assigned to a manager");
+	    }
+	    
+	    employeeRepository.findById(managerId)
+	            .orElseThrow(() -> new RuntimeException("Manager not found"));
+	    
+	    employee.setManagerId(managerId);
+	    employeeRepository.save(employee);
+	}
+
 }

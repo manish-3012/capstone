@@ -20,7 +20,7 @@ import com.capstone.ems.domain.dto.EmployeeDto;
 import com.capstone.ems.domain.entities.EmployeeEntity;
 import com.capstone.ems.mapper.Mapper;
 import com.capstone.ems.service.EmployeeService;
-import com.capstone.ems.service.UserService;
+import com.capstone.ems.service.UserManagementService;
 
 @RestController
 public class EmployeeController {
@@ -29,7 +29,7 @@ public class EmployeeController {
     private final Mapper<EmployeeEntity, EmployeeDto> employeeMapper;
     
     @Autowired
-    private UserService userService;
+    private UserManagementService userManagementService;
 
     public EmployeeController(EmployeeService employeeService, Mapper<EmployeeEntity, EmployeeDto> employeeMapper) {
         this.employeeService = employeeService;
@@ -126,10 +126,10 @@ public class EmployeeController {
     }
     
     @DeleteMapping("admin/delete-employee/{id}")
-    public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {
+    public ResponseEntity<String> deleteEmployee(@PathVariable Long id) {
         employeeService.delete(id);
-        userService.delete(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        userManagementService.deleteUser(id);
+        return new ResponseEntity<>("Employee deleted successfully", HttpStatus.OK);
     }
     
     @PutMapping("admin/update-employee/{id}")

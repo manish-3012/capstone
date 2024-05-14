@@ -8,8 +8,6 @@ import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -48,12 +46,26 @@ public class ProjectController {
         return new ResponseEntity<>(mapper.mapTo(savedProjectEntity), HttpStatus.CREATED);
     }
 
-    @GetMapping("/adminmanager/get-projects")
+    @GetMapping("/admin/get-projects")
     public List<ProjectDto> listProjects() {
         List<ProjectEntity> projects = projectService.findAll();
         return projects.stream()
                 .map(mapper::mapTo)
                 .collect(Collectors.toList());
+    }
+    
+    @GetMapping("/manager/get-projects")
+    public List<ProjectDto> getProjectsForManager() {
+        EmployeeEntity employee = employeeService.getAuthenticatedEmployee();
+        
+        List<ProjectEntity> projects = projectService.findAll();
+        
+        List<ProjectDto> managerProjects = projects.stream()
+                .filter(project -> project.getManagerId().equals(employee.getEmpId()))
+                .map(mapper::mapTo)
+                .collect(Collectors.toList());
+        
+        return managerProjects;
     }
 
     @GetMapping("/admin/get-project/{id}")
@@ -116,7 +128,7 @@ public class ProjectController {
                 .collect(Collectors.toList());
     }
     
-    @GetMapping("/manager/get-project/managerId/{managerId}")
+    @GetMapping("/manager/get-projects/managerId/{managerId}")
     public List<ProjectDto> getProjectsByManagerId(@PathVariable Long managerId) {
         
         EmployeeEntity employee = employeeService.getAuthenticatedEmployee();

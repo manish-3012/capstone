@@ -272,11 +272,4 @@ public class UserManagementServiceImpl implements UserManagementService{
 
         return username.toString().toLowerCase();
     }
-    
-    public EmployeeEntity getAuthenticatedEmployee() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        Optional<EmployeeEntity> foundEmployee = employeeService.findByEmail(email);
-        return foundEmployee.orElseThrow(() -> new RuntimeException("Employee not found"));
-    }
 }
