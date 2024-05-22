@@ -8,6 +8,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.capstone.ems.enums.UserType;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,6 +17,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -33,10 +36,10 @@ public class UserEntity implements UserDetails {
 	
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long userId;
 
     @Column(name = "username")
-    private String userName; 
+    private String username; 
     
     @Column(name = "email")
     private String email;
@@ -49,6 +52,11 @@ public class UserEntity implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     private UserType role;
+    
+    @OneToOne()
+    @JoinColumn(name = "employee_id")
+    @JsonBackReference
+    private EmployeeEntity employee;
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {

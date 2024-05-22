@@ -55,7 +55,7 @@ public class RequestController {
     	
         List<RequestEntity> requests = requestService.findAll();
         List<RequestEntity> filteredRequests = requests.stream()
-                .filter(request -> request.getManagerId().equals(employee.getEmpId()))
+                .filter(request -> request.getManager().getEmpId().equals(employee.getEmpId()))
                 .collect(Collectors.toList());
 
         List<RequestDto> requestDtos = filteredRequests.stream()
@@ -75,7 +75,7 @@ public class RequestController {
     	requestDto.setStatus(RequestStatus.PENDING);
         RequestEntity requestEntity = requestMapper.mapFrom(requestDto);
         
-        projectService.findOne(requestEntity.getProjectId())
+        projectService.findOne(requestEntity.getProject().getId())
                 .orElseThrow(() -> new RuntimeException("Project not found"));
 
         List<Long> employeeIds = requestEntity.getEmployeeIds();
@@ -104,7 +104,7 @@ public class RequestController {
     	
         List<RequestEntity> requests = requestService.getRequestsByStatus(requestStatus);
         List<RequestEntity> filteredRequests = requests.stream()
-                .filter(request -> request.getManagerId().equals(employee.getEmpId()))
+                .filter(request -> request.getManager().equals(employee.getEmpId()))
                 .collect(Collectors.toList());
 
         List<RequestDto> requestDtos = filteredRequests.stream()
@@ -127,7 +127,7 @@ public class RequestController {
         EmployeeEntity employee = employeeService.getAuthenticatedEmployee();
         RequestEntity request = foundRequest.orElseThrow(() -> new RuntimeException("Request not found"));
 
-        if (employee.getEmpId().equals(request.getManagerId())) {
+        if (employee.getEmpId().equals(request.getManager().getEmpId())) {
             return foundRequest.map(requestEntity -> new ResponseEntity<>(requestMapper.mapTo(requestEntity), HttpStatus.OK))
                     .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
         } else {
@@ -140,8 +140,8 @@ public class RequestController {
     	RequestEntity updatedRequestEntity = requestService.updateRequestStatus(requestId, status);
 
     	if (status == RequestStatus.APPROVED) {
-            Long projectId = updatedRequestEntity.getProjectId();
-            Long managerId = updatedRequestEntity.getManagerId();
+            Long projectId = updatedRequestEntity.getProject().getId();
+            Long managerId = updatedRequestEntity.getManager().getEmpId();
             
             List<Long> employeeIds = updatedRequestEntity.getEmployeeIds();
             for (Long employeeId : employeeIds) {

@@ -37,50 +37,58 @@ public class UserManagementServiceImpl implements UserManagementService{
     private PasswordEncoder passwordEncoder;
     @Autowired
     private EmployeeRepository employeeRepository;
-    @Autowired
-    private EmployeeService employeeService;
-
-    public ReqRes register(ReqRes registrationRequest){
+    
+    
+    public ReqRes register(ReqRes registrationRequest) {
         ReqRes resp = new ReqRes();
 
         try {
-        	System.out.println("Entered the try block of register with the registration request: " + registrationRequest);
-            UserEntity ourUser = new UserEntity();
-        	String username = generateUsername(registrationRequest.getName());
-        	ourUser.setUserName(username);
+//            System.out.println("Entered the try block of register with the registration request: " + registrationRequest);
+
+            String username = generateUsername(registrationRequest.getName());
             String email = username + "@nucleusteq.com";
             
-            System.out.println("Generated Username: " + ourUser.getUsername());
-            ourUser.setEmail(email);
-            ourUser.setName(registrationRequest.getName());
-            ourUser.setRole(registrationRequest.getRole());
-            ourUser.setPassword(passwordEncoder.encode(registrationRequest.getPassword()));
-            UserEntity ourUsersResult = usersRepo.save(ourUser);
-            if (ourUsersResult.getId()>0) {
-            	System.out.println("User Saved Succesfully " + ourUsersResult);
-                resp.setOurUsers((ourUsersResult));
-                resp.setMessage("User Saved Successfully");
-                resp.setStatusCode(200);
+            // Create EmployeeEntity first
+            EmployeeEntity emp = EmployeeEntity.builder()
+                    .name(registrationRequest.getName())
+                    .email(email)
+                    .userType(registrationRequest.getRole())
+                    .username(username)
+                    .build();
+            EmployeeEntity empResult = employeeRepository.save(emp);
+            
+            if (empResult != null && empResult.getEmpId() != null) {
+//                System.out.println("Employee Saved Successfully: " + empResult);
 
-                // Save to EmployeeEntity repository
-                EmployeeEntity emp = EmployeeEntity.builder()
-                        .name(registrationRequest.getName())
-                        .email(email)
-                        .userType(registrationRequest.getRole())
-                        .userName(username)
-                        .build();
-                EmployeeEntity empResult = employeeRepository.save(emp);
-                if (empResult != null) {
-                    System.out.println("Employee Saved Successfully " + empResult);
+                // Create UserEntity linked to the saved EmployeeEntity
+                UserEntity ourUser = new UserEntity();
+                ourUser.setUsername(empResult.getUsername());
+                ourUser.setEmail(empResult.getEmail());
+                ourUser.setName(empResult.getName());
+                ourUser.setRole(empResult.getUserType());
+                ourUser.setPassword(passwordEncoder.encode(registrationRequest.getPassword()));
+                ourUser.setEmployee(empResult);
+
+                UserEntity ourUsersResult = usersRepo.save(ourUser);
+
+                if (ourUsersResult.getUserId() > 0) {
+//                    System.out.println("User Saved Successfully: " + ourUsersResult);
+                    resp.setOurUsers(ourUsersResult);
+                    resp.setMessage("User Saved Successfully");
+                    resp.setStatusCode(200);
+
+                    // Update EmployeeEntity with the linked UserEntity
+                    empResult.setUser(ourUsersResult);
+                    employeeRepository.save(empResult);
                 }
             }
 
-        }catch (Exception e){
+        } catch (Exception e) {
             resp.setStatusCode(500);
             resp.setError(e.getMessage());
         }
 
-    	System.out.println("Returning response from the UserManagementService as  " + resp);
+//        System.out.println("Returning response from the UserManagementService as: " + resp);
         return resp;
     }
 
@@ -190,7 +198,7 @@ public class UserManagementServiceImpl implements UserManagementService{
     
     @Override
     public UserEntity getUserByUsername(String username) {
-        return usersRepo.findByUserName(username)
+        return usersRepo.findByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with username: " + username));
     }
 

@@ -3,6 +3,7 @@ package com.capstone.ems.service.impl;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -16,15 +17,10 @@ import com.capstone.ems.service.ProjectService;
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
 
-    private final EmployeeRepository employeeRepository;
-   
-    private final ProjectService projectService;
-
-    public EmployeeServiceImpl(EmployeeRepository employeeRepository,
-    		ProjectService projectService) {
-        this.employeeRepository = employeeRepository;
-        this.projectService = projectService;
-    }
+	@Autowired
+    private EmployeeRepository employeeRepository;
+	@Autowired
+	private ProjectService projectService; 
 
     @Override
     public EmployeeEntity save(EmployeeEntity employeeEntity) {
@@ -38,8 +34,10 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public Optional<EmployeeEntity> findOne(Long id) {
-        return employeeRepository.findById(id);
+        Optional<EmployeeEntity> employee = employeeRepository.findByEmpId(id);
+        return employee;
     }
+
 
     @Override
     public boolean isExists(Long id) {
@@ -47,32 +45,38 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public EmployeeEntity partialUpdate(Long id, EmployeeEntity employeeEntity) {
-        employeeEntity.setEmpId(id);
+    public EmployeeEntity partialUpdate(Long empId, EmployeeEntity employeeEntity) {
+        employeeEntity.setEmpId(empId);
 
-        return employeeRepository.findById(id).map(existingEmployee -> {
+        return employeeRepository.findById(empId).map(existingEmployee -> {
             Optional.ofNullable(employeeEntity.getName()).ifPresent(existingEmployee::setName);
             Optional.ofNullable(employeeEntity.getSkills()).ifPresent(existingEmployee::setSkills); // Update this line to handle List<String>
-            Optional.ofNullable(employeeEntity.getManagerId()).ifPresent(existingEmployee::setManagerId);
-            Optional.ofNullable(employeeEntity.getProjectId()).ifPresent(existingEmployee::setProjectId);
+            Optional.ofNullable(employeeEntity.getManager()).ifPresent(existingEmployee::setManager);
+            Optional.ofNullable(employeeEntity.getProject()).ifPresent(existingEmployee::setProject);
             return employeeRepository.save(existingEmployee);
         }).orElseThrow(() -> new RuntimeException("Employee does not exist"));
     }
 
     @Override
-    public void delete(Long id) {
-        employeeRepository.deleteById(id);
+    public void delete(Long empId) {
+        employeeRepository.deleteById(empId);
     }
 
    
     @Override
-    public List<EmployeeEntity> findByProjectId(Long projectId) {
-        return employeeRepository.findByProjectId(projectId);
+    public List<EmployeeEntity> findByProject(Long projectId) {
+    	ProjectEntity project = projectService.findOne(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found with id: " + projectId));
+        
+        return employeeRepository.findByProject(project);
     }
 
     @Override
-    public List<EmployeeEntity> findByManagerId(Long managerId) {
-        return employeeRepository.findByManagerId(managerId);
+    public List<EmployeeEntity> findByManager(Long managerId) {
+    	EmployeeEntity manager = employeeRepository.findById(managerId)
+	            .orElseThrow(() -> new RuntimeException("Manager not found with id: " + managerId));
+	    
+        return employeeRepository.findByManager(manager);
     }
     
     @Override
@@ -85,39 +89,37 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employeeRepository.findAllBySkillsContaining(skill);
     }
     
-    @Override
     public void assignProjectToEmployee(Long employeeId, Long projectId) {
         EmployeeEntity employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+                .orElseThrow(() -> new RuntimeException("Employee not found with id: " + employeeId));
         
-        if (employee.getProjectId() != null) {
+        ProjectEntity project = projectService.findOne(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found with id: " + projectId));
+        
+        if (employee.getProject() != null) {
             throw new RuntimeException("Employee is already assigned to a project");
         }
         
-        
-        ProjectEntity project = projectService.findOne(projectId)
-        		.orElseThrow(() -> new RuntimeException("Project not found"));
-        
-        employee.setProjectId(projectId);
+        employee.setProject(project);
         employeeRepository.save(employee);
     }
     
     @Override
     public void unassignProjectFromEmployee(Long employeeId) {
         EmployeeEntity employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+                .orElseThrow(() -> new RuntimeException("Employee not found with id: " + employeeId));
         
-        if(employee.getProjectId() == null)
+        if (employee.getProject() == null) {
             throw new RuntimeException("No project assigned to this employee");
+        }
         
-        employee.setProjectId(null);
-        employee.setManagerId(null);
+        employee.setProject(null);
         employeeRepository.save(employee);
     }
 
 	@Override
 	public Optional<EmployeeEntity> findByUserName(String userName) {
-		return employeeRepository.findByUserName(userName);
+		return employeeRepository.findByUsername(userName);
 	}
 	
 	@Override
@@ -130,17 +132,17 @@ public class EmployeeServiceImpl implements EmployeeService {
 	
 	@Override
 	public void assignManagerToEmployee(Long employeeId, Long managerId) {
-	    EmployeeEntity employee = employeeRepository.findById(employeeId)
-	            .orElseThrow(() -> new RuntimeException("Employee not found"));
+	    EmployeeEntity employee = employeeRepository.findByEmpId(employeeId)
+	            .orElseThrow(() -> new RuntimeException("Employee not found with id: " + employeeId));
 	    
-	    if (employee.getManagerId() != null) {
+	    EmployeeEntity manager = employeeRepository.findByEmpId(managerId)
+	            .orElseThrow(() -> new RuntimeException("Manager not found with id: " + managerId));
+	    
+	    if (employee.getManager() != null) {
 	        throw new RuntimeException("Employee is already assigned to a manager");
 	    }
 	    
-	    employeeRepository.findById(managerId)
-	            .orElseThrow(() -> new RuntimeException("Manager not found"));
-	    
-	    employee.setManagerId(managerId);
+	    employee.setManager(manager);
 	    employeeRepository.save(employee);
 	}
 

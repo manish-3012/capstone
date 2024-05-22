@@ -3,6 +3,7 @@ package com.capstone.ems.service;
 import java.util.List;
 import java.util.Optional;
 
+import com.capstone.ems.domain.entities.EmployeeEntity;
 import com.capstone.ems.domain.entities.ProjectEntity;
 
 public interface ProjectService {
@@ -18,7 +19,7 @@ public interface ProjectService {
     ProjectEntity partialUpdate(Long id, ProjectEntity projectEntity);
 
     void delete(Long id);
-
-	List<ProjectEntity> findProjectsByManagerId(Long managerId);
+    
+//	List<ProjectEntity> findProjectsByManagerId(Long managerId);
 
 }

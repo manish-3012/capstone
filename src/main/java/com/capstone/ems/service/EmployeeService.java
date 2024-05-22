@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.capstone.ems.domain.entities.EmployeeEntity;
-import com.capstone.ems.domain.entities.UserEntity;
+import com.capstone.ems.domain.entities.ProjectEntity;
 
 public interface EmployeeService {
 
@@ -20,9 +20,9 @@ public interface EmployeeService {
 
     void delete(Long id);
 
-    List<EmployeeEntity> findByProjectId(Long projectId);
+    List<EmployeeEntity> findByProject(Long project);
 
-    List<EmployeeEntity> findByManagerId(Long managerId);
+    List<EmployeeEntity> findByManager(Long manager);
     
     Optional<EmployeeEntity> findByEmail(String email);
     
@@ -30,10 +30,10 @@ public interface EmployeeService {
     
     List<EmployeeEntity> findAllBySkillsContaining(String skill);
     
-    void assignProjectToEmployee(Long employeeId, Long projectId);
+    void assignProjectToEmployee(Long employee, Long project);
 
-    void assignManagerToEmployee(Long employeeId, Long projectId);
-    
+    void assignManagerToEmployee(Long employee, Long manager);
+
     void unassignProjectFromEmployee(Long employeeId);
 
     public EmployeeEntity getAuthenticatedEmployee();

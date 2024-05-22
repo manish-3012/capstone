@@ -16,11 +16,13 @@ import lombok.NoArgsConstructor;
 public class EmployeeDto {
 
     private Long empId;
-    private String userName;
+    private String username;
+    private String email;
     private String name;
     private List<String> skills;
     private Long managerId;
+    private List<Long> managedProjectIds;
     private Long projectId;
-    private String email;
-    private UserType usertype;
+    private UserType userType;
+    private Long userId;
 }

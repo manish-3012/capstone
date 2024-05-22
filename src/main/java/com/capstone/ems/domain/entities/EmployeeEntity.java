@@ -3,7 +3,9 @@ package com.capstone.ems.domain.entities;
 import java.util.List;
 
 import com.capstone.ems.enums.UserType;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -14,7 +16,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -32,14 +38,16 @@ public class EmployeeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "emp_id")
     private Long empId;
 
     @NotNull
     @Column(name = "userName")
-    private String userName;
+    private String username;
 
     @NotBlank(message = "Email is mandatory")
-    @Column(name = "email")
+    @Column(name = "email", unique = true)
+    @Email
     private String email;
 
     @NotBlank(message = "Name is mandatory")
@@ -50,12 +58,21 @@ public class EmployeeEntity {
     @Column(name = "skill")
     private List<String> skills;
 
-    @Column(name = "mgr_id")
-    private Long managerId;
+    @ManyToOne
+    @JoinColumn(name = "manager_id", referencedColumnName = "emp_id")
+    private EmployeeEntity manager;
 
-    @Column(name = "project_id")
-    private Long projectId;
+    @OneToMany(mappedBy = "manager", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProjectEntity> managedProjectIds;
+    
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "project_id", referencedColumnName = "id", unique = true)
+    private ProjectEntity project;
 
     @Enumerated(EnumType.STRING)
     private UserType userType;
+    
+    @OneToOne(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private UserEntity user;
 }

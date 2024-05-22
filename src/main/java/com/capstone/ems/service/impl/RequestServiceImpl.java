@@ -3,19 +3,27 @@ package com.capstone.ems.service.impl;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.capstone.ems.domain.entities.EmployeeEntity;
 import com.capstone.ems.domain.entities.RequestEntity;
 import com.capstone.ems.enums.RequestStatus;
 import com.capstone.ems.repository.RequestRepository;
+import com.capstone.ems.service.EmployeeService;
 import com.capstone.ems.service.RequestService;
 
 @Service
 public class RequestServiceImpl implements RequestService {
+	@Autowired
     private final RequestRepository requestRepository;
+    @Autowired
+	private final EmployeeService employeeService;
 
-    public RequestServiceImpl(RequestRepository requestRepository) {
+    public RequestServiceImpl(RequestRepository requestRepository,
+    		EmployeeService employeeService) {
         this.requestRepository = requestRepository;
+        this.employeeService = employeeService;
     }
 
     @Override
@@ -30,7 +38,10 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public List<RequestEntity> getRequestsByManager(Long managerId) {
-        return requestRepository.findByManagerId(managerId);
+    	EmployeeEntity manager = employeeService.findOne(managerId)
+    			.orElseThrow(() -> new RuntimeException("Manager not found with id: " + managerId));
+    	
+        return requestRepository.findByManager(manager);
     }
 
     @Override

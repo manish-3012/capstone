@@ -13,12 +13,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserDto {
-	private Long user_id;
+	private Long userId;
     private String email;
     private String password;
-    private UserType user_type;
-
-    private String user_name; 
+    private UserType role;
+    private Long employeeId;
+    private String username; 
     private String name; 
-
 }

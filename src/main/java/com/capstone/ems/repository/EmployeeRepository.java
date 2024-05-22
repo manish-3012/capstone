@@ -7,17 +7,19 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.capstone.ems.domain.entities.EmployeeEntity;
+import com.capstone.ems.domain.entities.ProjectEntity;
 
 @Repository
 public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Long> {
+	List<EmployeeEntity> findByProject(ProjectEntity project);
+	
+	List<EmployeeEntity> findByManager(EmployeeEntity manager);
 
-    List<EmployeeEntity> findByProjectId(Long projectId);
-
-    List<EmployeeEntity> findByManagerId(Long managerId);
-    
     Optional<EmployeeEntity> findByEmail(String email);
     
     List<EmployeeEntity> findAllBySkillsContaining(String skill);
     
-    Optional<EmployeeEntity> findByUserName(String userName);
+    Optional<EmployeeEntity> findByUsername(String userName);
+    
+    Optional<EmployeeEntity> findByEmpId(Long id);
 }

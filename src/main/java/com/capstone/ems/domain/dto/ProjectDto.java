@@ -13,13 +13,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ProjectDto {
 
-private Long id;
-    
+    private Long id;
     private String name;
-    
     private String description;
-    
     private List<String> skills;
-    
-    private Long managerId;
+    private List<Long> employeeIds;
+    private Long manager;
 }

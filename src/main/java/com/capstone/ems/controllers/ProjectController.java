@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.capstone.ems.domain.dto.ProjectDto;
 import com.capstone.ems.domain.entities.EmployeeEntity;
 import com.capstone.ems.domain.entities.ProjectEntity;
+import com.capstone.ems.enums.UserType;
 import com.capstone.ems.mapper.Mapper;
 import com.capstone.ems.service.EmployeeService;
 import com.capstone.ems.service.ProjectService;
@@ -42,7 +43,10 @@ public class ProjectController {
     @PostMapping("/adminmanager/create-project")
     public ResponseEntity<ProjectDto> createProject(@RequestBody ProjectDto projectDto) {
         ProjectEntity projectEntity = mapper.mapFrom(projectDto);
+        System.out.println("Project Entity created: " + projectEntity);
         ProjectEntity savedProjectEntity = projectService.save(projectEntity);
+        
+        System.out.println("Project Entity saved: " + savedProjectEntity);
         return new ResponseEntity<>(mapper.mapTo(savedProjectEntity), HttpStatus.CREATED);
     }
 
@@ -54,19 +58,19 @@ public class ProjectController {
                 .collect(Collectors.toList());
     }
     
-    @GetMapping("/manager/get-projects")
-    public List<ProjectDto> getProjectsForManager() {
-        EmployeeEntity employee = employeeService.getAuthenticatedEmployee();
-        
-        List<ProjectEntity> projects = projectService.findAll();
-        
-        List<ProjectDto> managerProjects = projects.stream()
-                .filter(project -> project.getManagerId().equals(employee.getEmpId()))
-                .map(mapper::mapTo)
-                .collect(Collectors.toList());
-        
-        return managerProjects;
-    }
+    
+//    public List<ProjectDto> getProjectsForManager() {
+//        EmployeeEntity employee = employeeService.getAuthenticatedEmployee();
+//        
+//        List<ProjectEntity> projects = projectService.findAll();
+//        
+//        List<ProjectDto> managerProjects = projects.stream()
+//                .filter(project -> project.getManager().getEmpId().equals(employee.getEmpId()))
+//                .map(mapper::mapTo)
+//                .collect(Collectors.toList());
+//        
+//        return managerProjects;
+//    }
 
     @GetMapping("/admin/get-project/{id}")
     public ResponseEntity<ProjectDto> adminGetProjectById(@PathVariable Long id) {
@@ -82,7 +86,7 @@ public class ProjectController {
         Optional<ProjectEntity> foundProject = projectService.findOne(id);
         ProjectEntity project = foundProject.orElseThrow(() -> new RuntimeException("Project not found"));
 
-        if (!employee.getEmpId().equals(project.getManagerId())) {
+        if (!employee.getEmpId().equals(project.getManager().getEmpId())) {
             throw new AccessDeniedException("You are not authorized to access projects managed by another manager");
         }
 
@@ -120,26 +124,72 @@ public class ProjectController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
     
-    @GetMapping("/admin/get-project/manager/{managerId}")
-    public List<ProjectDto> adminGetProjectsByManagerId(@PathVariable Long managerId) {
-        List<ProjectEntity> projects = projectService.findProjectsByManagerId(managerId);
-        return projects.stream()
-                .map(mapper::mapTo)
-                .collect(Collectors.toList());
+    @GetMapping("/admin/get-project/manager/{empId}")
+    public ResponseEntity<List<ProjectDto>> adminGetProjectsByManagerId(@PathVariable Long empId) {
+        Optional<EmployeeEntity> optionalEmployee = employeeService.findOne(empId);
+        
+        if (optionalEmployee.isPresent()) {
+            EmployeeEntity employee = optionalEmployee.get();
+            
+            if (employee.getUserType() != UserType.MANAGER) {
+                return ResponseEntity.badRequest().build();
+            }
+            
+            List<ProjectEntity> managedProjects = employee.getManagedProjectIds();
+            
+            List<ProjectDto> projectDtos = managedProjects.stream()
+                    .map(mapper::mapTo)
+                    .collect(Collectors.toList());
+            
+            return ResponseEntity.ok(projectDtos);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
     
-    @GetMapping("/manager/get-projects/managerId/{managerId}")
-    public List<ProjectDto> getProjectsByManagerId(@PathVariable Long managerId) {
+    @GetMapping("/manager/get-projects")
+    public ResponseEntity<List<ProjectDto>> getProjectsForManager2() {
+        EmployeeEntity emp = employeeService.getAuthenticatedEmployee();
         
-        EmployeeEntity employee = employeeService.getAuthenticatedEmployee();
-
-        if (!employee.getEmpId().equals(managerId)) {
-            throw new AccessDeniedException("You are not authorized to access projects managed by another manager");
+        Optional<EmployeeEntity> optionalEmployee = employeeService.findOne(emp.getEmpId());
+        
+        if (optionalEmployee.isPresent()) {
+            EmployeeEntity employee = optionalEmployee.get();
+            
+            if (employee.getUserType() != UserType.MANAGER) {
+                return ResponseEntity.badRequest().build();
+            }
+            
+            List<ProjectEntity> managedProjects = employee.getManagedProjectIds();
+            
+            List<ProjectDto> projectDtos = managedProjects.stream()
+                    .map(mapper::mapTo)
+                    .collect(Collectors.toList());
+            
+            return ResponseEntity.ok(projectDtos);
+        } else {
+            return ResponseEntity.notFound().build();
         }
-
-        List<ProjectEntity> projects = projectService.findProjectsByManagerId(managerId);
-        return projects.stream()
-                .map(mapper::mapTo)
-                .collect(Collectors.toList());
     }
+    
+    
+//    @GetMapping("/manager/get-projects/managerId/{managerId}")
+//    public ResponseEntity<List<ProjectDto>> getProjectsByManagerId(@PathVariable Long managerId) {
+//        EmployeeEntity authenticatedEmployee = employeeService.getAuthenticatedEmployee();
+//
+//        if (authenticatedEmployee == null || authenticatedEmployee.getUserType() != UserType.MANAGER) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+//        }
+//
+//        if (!authenticatedEmployee.getEmpId().equals(managerId)) {
+//            throw new AccessDeniedException("You are not authorized to access projects managed by another manager");
+//        }
+//
+//        List<ProjectEntity> projects = projectService.findProjectsByManagerId(managerId);
+//        List<ProjectDto> projectDtos = projects.stream()
+//                .map(mapper::mapTo)
+//                .collect(Collectors.toList());
+//
+//        return ResponseEntity.ok(projectDtos);
+//    }
 }

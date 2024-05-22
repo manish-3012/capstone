@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -17,7 +18,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.capstone.ems.domain.dto.EmployeeDto;
+import com.capstone.ems.domain.dto.ProjectDto;
 import com.capstone.ems.domain.entities.EmployeeEntity;
+import com.capstone.ems.domain.entities.ProjectEntity;
+import com.capstone.ems.enums.UserType;
 import com.capstone.ems.mapper.Mapper;
 import com.capstone.ems.service.EmployeeService;
 import com.capstone.ems.service.UserManagementService;
@@ -31,7 +35,9 @@ public class EmployeeController {
     @Autowired
     private UserManagementService userManagementService;
 
-    public EmployeeController(EmployeeService employeeService, Mapper<EmployeeEntity, EmployeeDto> employeeMapper) {
+    public EmployeeController(EmployeeService employeeService, 
+    		Mapper<EmployeeEntity, EmployeeDto> employeeMapper,
+    		Mapper<ProjectEntity, ProjectDto> projectMapper) {
         this.employeeService = employeeService;
         this.employeeMapper = employeeMapper;
     }
@@ -52,16 +58,16 @@ public class EmployeeController {
     }
     
     @GetMapping("/all/get-employees/project/{id}")
-    public List<EmployeeDto> getEmployeesByProjectId(@PathVariable Long project_id) {
-    	List<EmployeeEntity> employees = employeeService.findByProjectId(project_id);
+    public List<EmployeeDto> getEmployeesByProjectId(@PathVariable Long projectId) {
+    	List<EmployeeEntity> employees = employeeService.findByProject(projectId);
         return employees.stream()
                 .map(employeeMapper::mapTo)
                 .collect(Collectors.toList());
     }
     
     @GetMapping("/all/get-employees/manager/{id}")
-    public List<EmployeeDto> getEmployeesByManagerId(@PathVariable Long mgr_id) {
-    	List<EmployeeEntity> employees = employeeService.findByManagerId(mgr_id);
+    public List<EmployeeDto> getEmployeesByManagerId(@PathVariable Long id) {
+    	List<EmployeeEntity> employees = employeeService.findByManager(id);
         return employees.stream()
                 .map(employeeMapper::mapTo)
                 .collect(Collectors.toList());
@@ -69,6 +75,7 @@ public class EmployeeController {
 
     @GetMapping("/all/get-employee/{id}")
     public ResponseEntity<EmployeeDto> getEmployee(@PathVariable Long id) {
+//    	System.out.println("Request received for Employee ID: " + id);
         Optional<EmployeeEntity> foundEmployee = employeeService.findOne(id);
         return foundEmployee.map(employeeEntity -> new ResponseEntity<>(employeeMapper.mapTo(employeeEntity), HttpStatus.OK))
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
@@ -145,15 +152,21 @@ public class EmployeeController {
         return new ResponseEntity<>(employeeMapper.mapTo(updatedEmployeeEntity), HttpStatus.OK);
     }
 
-    @PatchMapping("admin/partial-update-employee/{id}")
-    public ResponseEntity<EmployeeDto> partialUpdateEmployee(@PathVariable Long id, @RequestBody EmployeeDto employeeDto) {
-        if (!employeeService.isExists(id)) {
+    @PatchMapping("admin/partial-update-employee/{empId}")
+    public ResponseEntity<EmployeeDto> partialUpdateEmployee(@PathVariable Long empId, @RequestBody EmployeeDto employeeDto) {
+        if (!employeeService.isExists(empId)) {
+        	System.out.println("Emp does not exist");
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        employeeDto.setEmpId(id);
+        employeeDto.setEmpId(empId);
+        System.out.println("EmpId: " + empId + " has been set to the employeeDto: " + employeeDto);
         EmployeeEntity employeeEntity = employeeMapper.mapFrom(employeeDto);
-        EmployeeEntity updatedEmployeeEntity = employeeService.partialUpdate(id, employeeEntity);
+        System.out.println("EmployeeEntity is generated: " + employeeEntity);
+        EmployeeEntity updatedEmployeeEntity = employeeService.partialUpdate(empId, employeeEntity);
+        System.out.println("EmployeeEntity is uodated: " + updatedEmployeeEntity);
         return new ResponseEntity<>(employeeMapper.mapTo(updatedEmployeeEntity), HttpStatus.OK);
     }
+    
+    
 }
