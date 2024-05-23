@@ -57,20 +57,6 @@ public class ProjectController {
                 .map(mapper::mapTo)
                 .collect(Collectors.toList());
     }
-    
-    
-//    public List<ProjectDto> getProjectsForManager() {
-//        EmployeeEntity employee = employeeService.getAuthenticatedEmployee();
-//        
-//        List<ProjectEntity> projects = projectService.findAll();
-//        
-//        List<ProjectDto> managerProjects = projects.stream()
-//                .filter(project -> project.getManager().getEmpId().equals(employee.getEmpId()))
-//                .map(mapper::mapTo)
-//                .collect(Collectors.toList());
-//        
-//        return managerProjects;
-//    }
 
     @GetMapping("/admin/get-project/{id}")
     public ResponseEntity<ProjectDto> adminGetProjectById(@PathVariable Long id) {
@@ -172,24 +158,4 @@ public class ProjectController {
         }
     }
     
-    
-//    @GetMapping("/manager/get-projects/managerId/{managerId}")
-//    public ResponseEntity<List<ProjectDto>> getProjectsByManagerId(@PathVariable Long managerId) {
-//        EmployeeEntity authenticatedEmployee = employeeService.getAuthenticatedEmployee();
-//
-//        if (authenticatedEmployee == null || authenticatedEmployee.getUserType() != UserType.MANAGER) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-//        }
-//
-//        if (!authenticatedEmployee.getEmpId().equals(managerId)) {
-//            throw new AccessDeniedException("You are not authorized to access projects managed by another manager");
-//        }
-//
-//        List<ProjectEntity> projects = projectService.findProjectsByManagerId(managerId);
-//        List<ProjectDto> projectDtos = projects.stream()
-//                .map(mapper::mapTo)
-//                .collect(Collectors.toList());
-//
-//        return ResponseEntity.ok(projectDtos);
-//    }
 }

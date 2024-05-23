@@ -73,8 +73,10 @@ public class RequestController {
     	EmployeeEntity employee = employeeService.getAuthenticatedEmployee();
     	requestDto.setManagerId(employee.getEmpId());
     	requestDto.setStatus(RequestStatus.PENDING);
+    	System.out.println("RequestDto is created till: " + requestDto);
         RequestEntity requestEntity = requestMapper.mapFrom(requestDto);
         
+        System.out.println("RequestEntity is created till: " + requestEntity);
         projectService.findOne(requestEntity.getProject().getId())
                 .orElseThrow(() -> new RuntimeException("Project not found"));
 
@@ -88,9 +90,19 @@ public class RequestController {
         return new ResponseEntity<>(requestMapper.mapTo(savedRequestEntity), HttpStatus.CREATED);
     }
 
-    @GetMapping("admin/status/{status}")
-    public ResponseEntity<List<RequestDto>> adminGetRequestsByStatus(@PathVariable RequestStatus status) {
+//    @GetMapping("admin/status/{status}")
+    public ResponseEntity<List<RequestDto>> adminGetRequestsByStatus2(@PathVariable RequestStatus status) {
         List<RequestEntity> requests = requestService.getRequestsByStatus(status);
+        List<RequestDto> requestDtos = requests.stream()
+                .map(requestMapper::mapTo)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(requestDtos);
+    }
+    
+    @GetMapping("admin/status/{status}")
+    public ResponseEntity<List<RequestDto>> adminGetRequestsByStatus(@PathVariable String status) {
+    	RequestStatus requestStatus = RequestStatus.valueOf(status.toUpperCase()); 
+        List<RequestEntity> requests = requestService.getRequestsByStatus(requestStatus);
         List<RequestDto> requestDtos = requests.stream()
                 .map(requestMapper::mapTo)
                 .collect(Collectors.toList());
@@ -104,7 +116,7 @@ public class RequestController {
     	
         List<RequestEntity> requests = requestService.getRequestsByStatus(requestStatus);
         List<RequestEntity> filteredRequests = requests.stream()
-                .filter(request -> request.getManager().equals(employee.getEmpId()))
+                .filter(request -> request.getManager() != null && request.getManager().getEmpId().equals(employee.getEmpId()))
                 .collect(Collectors.toList());
 
         List<RequestDto> requestDtos = filteredRequests.stream()
@@ -136,10 +148,12 @@ public class RequestController {
     }
 
     @PutMapping("/admin/request/{requestId}/status/{status}")
-    public ResponseEntity<String> updateRequestStatus(@PathVariable Long requestId, @PathVariable RequestStatus status) {
-    	RequestEntity updatedRequestEntity = requestService.updateRequestStatus(requestId, status);
+    public ResponseEntity<String> updateRequestStatus(@PathVariable Long requestId, @PathVariable String status) {
+    	RequestStatus requestStatus = RequestStatus.valueOf(status.toUpperCase()); 
+    	
+    	RequestEntity updatedRequestEntity = requestService.updateRequestStatus(requestId, requestStatus);
 
-    	if (status == RequestStatus.APPROVED) {
+    	if (requestStatus == RequestStatus.APPROVED) {
             Long projectId = updatedRequestEntity.getProject().getId();
             Long managerId = updatedRequestEntity.getManager().getEmpId();
             
