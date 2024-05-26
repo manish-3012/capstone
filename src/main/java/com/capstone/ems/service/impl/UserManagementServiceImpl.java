@@ -143,14 +143,11 @@ public class UserManagementServiceImpl implements UserManagementService{
         ReqRes reqRes = new ReqRes();
 
         try {
-        	System.out.println("Entered getAllUsers Service");
             List<UserEntity> result = usersRepo.findAll();
-            System.out.println("Fetched all users: " + result);
             if (!result.isEmpty()) {
                 reqRes.setOurUsersList(result);
                 reqRes.setStatusCode(200);
                 reqRes.setMessage("Successful");
-                System.out.println("Result Set Successfully");
             } else {
                 reqRes.setStatusCode(404);
                 reqRes.setMessage("No users found");

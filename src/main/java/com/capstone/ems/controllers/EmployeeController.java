@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -19,9 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.capstone.ems.domain.dto.EmployeeDto;
 import com.capstone.ems.domain.dto.ProjectDto;
+import com.capstone.ems.domain.dto.ReqRes;
 import com.capstone.ems.domain.entities.EmployeeEntity;
 import com.capstone.ems.domain.entities.ProjectEntity;
-import com.capstone.ems.enums.UserType;
+import com.capstone.ems.domain.entities.UserEntity;
 import com.capstone.ems.mapper.Mapper;
 import com.capstone.ems.service.EmployeeService;
 import com.capstone.ems.service.UserManagementService;
@@ -65,6 +65,16 @@ public class EmployeeController {
                 .collect(Collectors.toList());
     }
     
+    @GetMapping("/all/get-employee/user-id/{userId}")
+    public ResponseEntity<EmployeeDto> getEmployeeByUserId(@PathVariable Long userId) {
+    	ReqRes res = userManagementService.getUsersById(userId);
+    	UserEntity userEntity = res.getOurUsers();
+    	
+        Optional<EmployeeEntity> foundEmployee = employeeService.findByUser(userEntity);
+        return foundEmployee.map(employeeEntity -> new ResponseEntity<>(employeeMapper.mapTo(employeeEntity), HttpStatus.OK))
+                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+    
     @GetMapping("/all/get-employees/manager/{id}")
     public List<EmployeeDto> getEmployeesByManagerId(@PathVariable Long id) {
     	List<EmployeeEntity> employees = employeeService.findByManager(id);
@@ -75,7 +85,6 @@ public class EmployeeController {
 
     @GetMapping("/all/get-employee/{id}")
     public ResponseEntity<EmployeeDto> getEmployee(@PathVariable Long id) {
-//    	System.out.println("Request received for Employee ID: " + id);
         Optional<EmployeeEntity> foundEmployee = employeeService.findOne(id);
         return foundEmployee.map(employeeEntity -> new ResponseEntity<>(employeeMapper.mapTo(employeeEntity), HttpStatus.OK))
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));

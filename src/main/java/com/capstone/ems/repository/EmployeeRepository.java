@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import com.capstone.ems.domain.entities.EmployeeEntity;
 import com.capstone.ems.domain.entities.ProjectEntity;
+import com.capstone.ems.domain.entities.UserEntity;
 
 @Repository
 public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Long> {
@@ -22,4 +23,6 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Long> 
     Optional<EmployeeEntity> findByUsername(String userName);
     
     Optional<EmployeeEntity> findByEmpId(Long id);
+    
+    Optional<EmployeeEntity> findByUser(UserEntity user);
 }

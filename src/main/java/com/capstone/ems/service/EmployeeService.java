@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import com.capstone.ems.domain.entities.EmployeeEntity;
 import com.capstone.ems.domain.entities.ProjectEntity;
+import com.capstone.ems.domain.entities.UserEntity;
 
 public interface EmployeeService {
 
@@ -37,5 +38,7 @@ public interface EmployeeService {
     void unassignProjectFromEmployee(Long employeeId);
 
     public EmployeeEntity getAuthenticatedEmployee();
+
+	Optional<EmployeeEntity> findByUser(UserEntity userEntity);
     
 }

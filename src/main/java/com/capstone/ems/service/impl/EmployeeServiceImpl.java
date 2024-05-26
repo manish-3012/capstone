@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.capstone.ems.domain.entities.EmployeeEntity;
 import com.capstone.ems.domain.entities.ProjectEntity;
+import com.capstone.ems.domain.entities.UserEntity;
 import com.capstone.ems.repository.EmployeeRepository;
 import com.capstone.ems.service.EmployeeService;
 import com.capstone.ems.service.ProjectService;
@@ -77,6 +78,12 @@ public class EmployeeServiceImpl implements EmployeeService {
 	            .orElseThrow(() -> new RuntimeException("Manager not found with id: " + managerId));
 	    
         return employeeRepository.findByManager(manager);
+    }
+    
+    @Override
+    public Optional<EmployeeEntity> findByUser(UserEntity userEntity) {
+      
+    	return employeeRepository.findByUser(userEntity);
     }
     
     @Override

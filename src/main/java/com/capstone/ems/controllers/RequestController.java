@@ -89,15 +89,6 @@ public class RequestController {
         RequestEntity savedRequestEntity = requestService.save(requestEntity);
         return new ResponseEntity<>(requestMapper.mapTo(savedRequestEntity), HttpStatus.CREATED);
     }
-
-//    @GetMapping("admin/status/{status}")
-    public ResponseEntity<List<RequestDto>> adminGetRequestsByStatus2(@PathVariable RequestStatus status) {
-        List<RequestEntity> requests = requestService.getRequestsByStatus(status);
-        List<RequestDto> requestDtos = requests.stream()
-                .map(requestMapper::mapTo)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(requestDtos);
-    }
     
     @GetMapping("admin/status/{status}")
     public ResponseEntity<List<RequestDto>> adminGetRequestsByStatus(@PathVariable String status) {
