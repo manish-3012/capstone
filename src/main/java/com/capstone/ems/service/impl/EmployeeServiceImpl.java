@@ -49,11 +49,18 @@ public class EmployeeServiceImpl implements EmployeeService {
     public EmployeeEntity partialUpdate(Long empId, EmployeeEntity employeeEntity) {
         employeeEntity.setEmpId(empId);
 
-        return employeeRepository.findById(empId).map(existingEmployee -> {
+        return employeeRepository.findByEmpId(empId).map(existingEmployee -> {
             Optional.ofNullable(employeeEntity.getName()).ifPresent(existingEmployee::setName);
+            Optional.ofNullable(employeeEntity.getEmail()).ifPresent(existingEmployee::setEmail);
             Optional.ofNullable(employeeEntity.getSkills()).ifPresent(existingEmployee::setSkills); // Update this line to handle List<String>
             Optional.ofNullable(employeeEntity.getManager()).ifPresent(existingEmployee::setManager);
             Optional.ofNullable(employeeEntity.getProject()).ifPresent(existingEmployee::setProject);
+            Optional.ofNullable(employeeEntity.getUserType()).ifPresent(existingEmployee::setUserType);
+            Optional.ofNullable(employeeEntity.getUsername()).ifPresent(existingEmployee::setUsername);
+            Optional.ofNullable(employeeEntity.getManagedProjectIds()).ifPresent(managedProjectIds -> {
+                existingEmployee.getManagedProjectIds().clear();
+                existingEmployee.getManagedProjectIds().addAll(managedProjectIds);
+            });
             return employeeRepository.save(existingEmployee);
         }).orElseThrow(() -> new RuntimeException("Employee does not exist"));
     }

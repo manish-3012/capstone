@@ -169,11 +169,11 @@ public class EmployeeController {
         }
 
         employeeDto.setEmpId(empId);
-        System.out.println("EmpId: " + empId + " has been set to the employeeDto: " + employeeDto);
+//        System.out.println("EmpId: " + empId + " has been set to the employeeDto: " + employeeDto);
         EmployeeEntity employeeEntity = employeeMapper.mapFrom(employeeDto);
-        System.out.println("EmployeeEntity is generated: " + employeeEntity);
+//        System.out.println("EmployeeEntity is generated: " + employeeEntity);
         EmployeeEntity updatedEmployeeEntity = employeeService.partialUpdate(empId, employeeEntity);
-        System.out.println("EmployeeEntity is uodated: " + updatedEmployeeEntity);
+//        System.out.println("EmployeeEntity is uodated: " + updatedEmployeeEntity);
         return new ResponseEntity<>(employeeMapper.mapTo(updatedEmployeeEntity), HttpStatus.OK);
     }
     
