@@ -110,7 +110,7 @@ public class ProjectController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
     
-    @GetMapping("/admin/get-project/manager/{empId}")
+    @GetMapping("/adminmanager/get-project/manager/{empId}")
     public ResponseEntity<List<ProjectDto>> adminGetProjectsByManagerId(@PathVariable Long empId) {
         Optional<EmployeeEntity> optionalEmployee = employeeService.findOne(empId);
         
