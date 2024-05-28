@@ -16,6 +16,8 @@ import com.capstone.ems.domain.dto.ReqRes;
 import com.capstone.ems.domain.entities.UserEntity;
 import com.capstone.ems.service.UserManagementService;
 
+import jakarta.transaction.Transactional;
+
 @RestController
 public class UserManagementController {
 
@@ -28,6 +30,7 @@ public class UserManagementController {
         return ResponseEntity.ok(usersManagementService.register(reg));
     }
 
+    @Transactional
     @PostMapping("/auth/login")
     public ResponseEntity<ReqRes> login(@RequestBody ReqRes req){
         return ResponseEntity.ok(usersManagementService.login(req));
@@ -40,7 +43,7 @@ public class UserManagementController {
 
     @GetMapping("/admin/get-all-users")
     public ResponseEntity<ReqRes> getAllUsers(){
-    	System.out.println("Entered the Get All Users End Point");
+//    	System.out.println("Entered the Get All Users End Point");
         return ResponseEntity.ok(usersManagementService.getAllUsers());
     }
 

@@ -30,14 +30,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-    	System.out.println("HTTP Request: " + request);
+//    	System.out.println("HTTP Request: " + request);
     	final String authHeader = request.getHeader("Authorization");
         final String jwtToken;
         final String userEmail;
 
-        System.out.println("Entered doFilterInternal with jwtToken: " + authHeader);
+//        System.out.println("Entered doFilterInternal with jwtToken: " + authHeader);
         if (authHeader == null) {
-        	System.out.println("Auth Header is Blank returning");
+//        	System.out.println("Auth Header is Blank returning");
             filterChain.doFilter(request, response);
             return;
         }
@@ -48,26 +48,26 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userEntityDetailService.loadUserByUsername(userEmail);
             
-            System.out.println("User Details fetched inside doFilterInternal as: " + userDetails);
+//            System.out.println("User Details fetched inside doFilterInternal as: " + userDetails);
 
             if (jwtUtils.isTokenValid(jwtToken, userDetails)) {
-            	System.out.println("User Details: " + userDetails);
+//            	System.out.println("User Details: " + userDetails);
                 SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-                System.out.println("Security Context: " + securityContext);
+//                System.out.println("Security Context: " + securityContext);
                 UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities()
                 );
-                System.out.println("UsernamePasswordAuthenticationToken: " + token);
+//                System.out.println("UsernamePasswordAuthenticationToken: " + token);
                 token.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 securityContext.setAuthentication(token);
                 
-                System.out.println("Security Context: " + securityContext);
+//                System.out.println("Security Context: " + securityContext);
                 
                 SecurityContextHolder.setContext(securityContext);
             }
         }
         
-        System.out.println("JwtAuthFilter is passing to another filter in the chain.");
+//        System.out.println("JwtAuthFilter is passing to another filter in the chain.");
         filterChain.doFilter(request, response);
     }
 }

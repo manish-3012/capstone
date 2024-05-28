@@ -238,7 +238,7 @@ public class UserManagementServiceImpl implements UserManagementService{
         try {
             Optional<UserEntity> userOptional = usersRepo.findByEmail(email);
             if (userOptional.isPresent()) {
-            	System.out.println("UserOptional" + userOptional);
+//            	System.out.println("UserOptional" + userOptional);
                 reqRes.setOurUsers(userOptional.get());
                 reqRes.setStatusCode(200);
                 reqRes.setMessage("successful");
