@@ -67,15 +67,9 @@ public class ProjectController {
     
     @GetMapping("/manageruser/get-project/{id}")
     public ResponseEntity<ProjectDto> getProjectById(@PathVariable Long id) {
-    	EmployeeEntity employee = employeeService.getAuthenticatedEmployee();
-
         Optional<ProjectEntity> foundProject = projectService.findOne(id);
         ProjectEntity project = foundProject.orElseThrow(() -> new RuntimeException("Project not found"));
-
-        if (!employee.getEmpId().equals(project.getManager().getEmpId())) {
-            throw new AccessDeniedException("You are not authorized to access projects managed by another manager");
-        }
-
+    
         ProjectDto projectDto = mapper.mapTo(project);
         return ResponseEntity.ok(projectDto);
     }

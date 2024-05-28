@@ -18,4 +18,6 @@ public interface RequestService {
     List<RequestEntity> getRequestsByStatus(RequestStatus status);
     
     RequestEntity updateRequestStatus(Long requestId, RequestStatus status);
+    
+    void deleteRequest(Long requestId);
 }

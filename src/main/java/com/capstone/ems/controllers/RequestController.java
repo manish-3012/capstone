@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.capstone.ems.domain.dto.RequestDto;
 import com.capstone.ems.domain.entities.EmployeeEntity;
-import com.capstone.ems.domain.entities.ProjectEntity;
 import com.capstone.ems.domain.entities.RequestEntity;
 import com.capstone.ems.enums.RequestStatus;
 import com.capstone.ems.mapper.Mapper;
@@ -167,6 +167,12 @@ public class RequestController {
                 .map(requestMapper::mapTo)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(requestDtos);
+    }
+    
+    @DeleteMapping("manager/delete-request/{requestId}")
+    public ResponseEntity<Void> deleteRequest(@PathVariable Long requestId) {
+        requestService.deleteRequest(requestId);
+        return ResponseEntity.noContent().build();
     }
     
 }

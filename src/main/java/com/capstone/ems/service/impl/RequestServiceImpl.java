@@ -62,4 +62,13 @@ public class RequestServiceImpl implements RequestService {
 	public List<RequestEntity> findAll() {
 		return requestRepository.findAll();
 	}
+	
+	@Override
+    public void deleteRequest(Long requestId) {
+        if (requestRepository.existsById(requestId)) {
+            requestRepository.deleteById(requestId);
+        } else {
+            throw new RuntimeException("Request not found with id: " + requestId);
+        }
+    }
 }
