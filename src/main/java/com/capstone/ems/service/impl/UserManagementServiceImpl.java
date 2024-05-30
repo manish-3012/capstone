@@ -238,7 +238,6 @@ public class UserManagementServiceImpl implements UserManagementService{
         try {
             Optional<UserEntity> userOptional = usersRepo.findByEmail(email);
             if (userOptional.isPresent()) {
-//            	System.out.println("UserOptional" + userOptional);
                 reqRes.setOurUsers(userOptional.get());
                 reqRes.setStatusCode(200);
                 reqRes.setMessage("successful");
@@ -254,7 +253,7 @@ public class UserManagementServiceImpl implements UserManagementService{
         return reqRes;
     }
     
-    private String generateUsername(String name) {
+    public String generateUsername(String name) {
         String[] nameParts = name.split(" ");
         StringBuilder username = new StringBuilder();
 

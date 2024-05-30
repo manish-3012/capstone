@@ -164,16 +164,14 @@ public class EmployeeController {
     @PatchMapping("admin/partial-update-employee/{empId}")
     public ResponseEntity<EmployeeDto> partialUpdateEmployee(@PathVariable Long empId, @RequestBody EmployeeDto employeeDto) {
         if (!employeeService.isExists(empId)) {
-        	System.out.println("Emp does not exist");
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
         employeeDto.setEmpId(empId);
-//        System.out.println("EmpId: " + empId + " has been set to the employeeDto: " + employeeDto);
         EmployeeEntity employeeEntity = employeeMapper.mapFrom(employeeDto);
-//        System.out.println("EmployeeEntity is generated: " + employeeEntity);
+
         EmployeeEntity updatedEmployeeEntity = employeeService.partialUpdate(empId, employeeEntity);
-//        System.out.println("EmployeeEntity is uodated: " + updatedEmployeeEntity);
+
         return new ResponseEntity<>(employeeMapper.mapTo(updatedEmployeeEntity), HttpStatus.OK);
     }
     
